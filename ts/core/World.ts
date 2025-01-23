@@ -5,22 +5,32 @@ import { AssetManager } from "./AssetManager";
 import { assets } from "../manifest";
 import { Player } from "../entities/Player";
 import { VehicleControls } from "./VehicleControls";
+import { Projectile } from "../entities/Projectile";
+import {
+  createPlayerProjectileMesh,
+  PlayerProjectile,
+} from "../entities/PlayerProjectile";
+
+const maxPlayerProjectiles = 100;
 
 export class World {
+  public readonly time: YUKA.Time;
+  public readonly field: YUKA.Vector3;
+
   private readonly stats: Stats;
   private readonly camera: THREE.PerspectiveCamera;
   private scene: THREE.Scene;
   private readonly renderer: THREE.WebGLRenderer;
-  private readonly time: YUKA.Time;
   private requestID: number = -1;
   private readonly assetManager: AssetManager;
 
-  private field: YUKA.Vector3;
   private fieldMesh?: THREE.Mesh;
 
   private entityManager: YUKA.EntityManager;
   private player?: Player;
   private controls?: VehicleControls;
+  private playerProjectiles: PlayerProjectile[] = [];
+  private playerProjectileMesh: THREE.InstancedMesh;
 
   constructor() {
     this.time = new YUKA.Time();
@@ -59,6 +69,10 @@ export class World {
     dirLight.shadow.bias = 0.01;
     this.scene.add(dirLight);
     // this.scene.add(new THREE.CameraHelper(dirLight.shadow.camera));
+
+    this.playerProjectileMesh =
+      createPlayerProjectileMesh(maxPlayerProjectiles);
+    this.scene.add(this.playerProjectileMesh);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -133,6 +147,15 @@ export class World {
     this.controls.setPosition(0, 0, 0);
   }
 
+  private updateProjectileMeshes() {
+    for (let i = 0; i < this.playerProjectiles.length; i++) {
+      const projectile = this.playerProjectiles[i];
+      this.playerProjectileMesh.setMatrixAt(i, projectile.worldMatrix as any);
+    }
+    this.playerProjectileMesh.count = this.playerProjectiles.length;
+    this.playerProjectileMesh.instanceMatrix.needsUpdate = true;
+  }
+
   private update() {
     const delta = this.time.update().getDelta();
     // game logic here
@@ -141,6 +164,8 @@ export class World {
     this.entityManager.update(delta);
 
     // render
+    this.updateProjectileMeshes();
+
     this.renderer.render(this.scene, this.camera);
 
     this.stats.update();
@@ -165,6 +190,26 @@ export class World {
   }
 
   restart() {
+    this.time.reset();
     this.controls?.connect();
+  }
+
+  addProjectile(projectile: Projectile) {
+    if (projectile instanceof PlayerProjectile) {
+      this.playerProjectiles.push(projectile);
+    }
+
+    this.entityManager.add(projectile);
+  }
+
+  removeProjectile(projectile: Projectile) {
+    if (projectile instanceof PlayerProjectile) {
+      const index = this.playerProjectiles.indexOf(projectile);
+      if (index !== -1) {
+        this.playerProjectiles.splice(index, 1);
+      }
+    }
+
+    this.entityManager.remove(projectile);
   }
 }

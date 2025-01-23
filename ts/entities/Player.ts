@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { World } from "../core/World";
 import { ParticleSystem } from "../core/ParticleSystem";
 import { sync } from "./utils";
+import { PlayerProjectile } from "./PlayerProjectile";
 
 const aabb = new AABB();
 const direction = new Vector3();
@@ -28,7 +29,7 @@ export class Player extends MovingEntity {
 
   public readonly mesh: THREE.Mesh;
 
-  constructor(private readonly world: World) {
+  constructor(public readonly world: World) {
     super();
 
     this.maxSpeed = 6;
@@ -62,7 +63,18 @@ export class Player extends MovingEntity {
     return this;
   }
 
-  shoot() {}
+  shoot() {
+    const elapsedTime = this.world.time.getElapsed();
+    if (elapsedTime - this.lastShotTime > 1 / this.shotsPerSecond) {
+      this.lastShotTime = elapsedTime;
+
+      this.getDirection(direction);
+      const projectile = new PlayerProjectile(this, direction);
+      this.world.addProjectile(projectile);
+
+      // TODO play sound
+    }
+  }
 
   private updateParticles(delta: number) {}
 
