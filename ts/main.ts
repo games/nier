@@ -1,4 +1,8 @@
 import "./styles.css";
 import { World } from "./core/World";
 
-new World().run();
+(async () => {
+  const world = new World();
+  await world.init();
+  world.run();
+})();

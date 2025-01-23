@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import * as YUKA from "yuka";
+import { AssetManager } from "./AssetManager";
+import { assets } from "../manifest";
 
 export class World {
   private readonly camera: THREE.PerspectiveCamera;
@@ -7,9 +9,11 @@ export class World {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly time: YUKA.Time;
   private requestID: number = -1;
+  private readonly assetManager: AssetManager;
 
   constructor() {
     this.time = new YUKA.Time();
+    this.assetManager = new AssetManager();
 
     this.camera = new THREE.PerspectiveCamera(
       40,
@@ -48,8 +52,6 @@ export class World {
     document.body.appendChild(this.renderer.domElement);
 
     window.addEventListener("resize", this._onWindowResize, false);
-
-    this.initScene();
   }
 
   private _onWindowResize = () => {
@@ -75,6 +77,11 @@ export class World {
 
     // render
     this.renderer.render(this.scene, this.camera);
+  }
+
+  async init() {
+    await this.assetManager.init(assets);
+    this.initScene();
   }
 
   run() {
