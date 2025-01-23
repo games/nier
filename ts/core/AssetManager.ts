@@ -13,8 +13,9 @@ export type Asset =
 export class AssetManager {
   private readonly loadingManager: THREE.LoadingManager;
   private readonly audioLoader: THREE.AudioLoader;
-  private readonly audioListener: THREE.AudioListener;
   private readonly audios: Map<string, any>;
+  
+  public readonly audioListener: THREE.AudioListener;
 
   constructor() {
     this.loadingManager = new THREE.LoadingManager();
