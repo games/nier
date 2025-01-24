@@ -1,0 +1,30 @@
+import { LeftRightMovementPattern } from "../patterns/MovementPatterns";
+import { World } from "./World";
+
+type StageLoader = (world: World) => void;
+
+const stages: StageLoader[] = [
+  (world: World) => {
+    world.updateField(15, 1, 15);
+    if (world.controls) {
+      world.controls.setPosition(0, 0.5, 5);
+      world.controls.resetRotation();
+    }
+
+    const guard = world.prefabs.guard();
+    guard.position.set(0, 0.5, -4);
+    // guard.setCombatPattern(new DefaultCombatPattern());
+    guard.setMovementPattern(new LeftRightMovementPattern(world));
+    world.addGuard(guard);
+  },
+];
+
+export class StageManager {
+  constructor(private readonly world: World) {}
+
+  load(id: number) {
+    if (id >= 0 && id < stages.length) {
+      stages[id](this.world);
+    }
+  }
+}

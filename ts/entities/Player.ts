@@ -2,7 +2,7 @@ import { AABB, MovingEntity, MathUtils, OBB, Ray, Vector3 } from "yuka";
 import * as THREE from "three";
 import { World } from "../core/World";
 import { ParticleSystem } from "../core/ParticleSystem";
-import { sync } from "./utils";
+import { playAudio, sync } from "./utils";
 import { PlayerProjectile } from "./PlayerProjectile";
 
 const aabb = new AABB();
@@ -16,11 +16,11 @@ const offset = new Vector3();
 const MAX_HEALTH_POINTS = 3;
 
 export class Player extends MovingEntity {
-  private healthPoints = MAX_HEALTH_POINTS;
+  public healthPoints = MAX_HEALTH_POINTS;
   private shotsPerSecond = 10;
   private lastShotTime = 0;
-  private obb: OBB;
-  private audios: Map<string, any>;
+  public readonly obb: OBB;
+  public readonly audios: Map<string, any>;
   private maxParticles = 20;
   private particleSystem: ParticleSystem;
   private particlesPerSecond = 6;
@@ -50,6 +50,17 @@ export class Player extends MovingEntity {
     this.mesh.matrixAutoUpdate = false;
     this.mesh.castShadow = true;
     this.setRenderComponent(this.mesh, sync);
+
+    const assetManager = this.world.assetManager;
+    const playerShot = assetManager.getAudio("playerShot");
+    const playerHit = assetManager.getAudio("playerHit");
+    const playerExplode = assetManager.getAudio("playerExplode");
+
+    this.mesh.add(playerShot, playerHit, playerExplode);
+
+    this.audios.set("playerShot", playerShot);
+    this.audios.set("playerHit", playerHit);
+    this.audios.set("playerExplode", playerExplode);
   }
 
   update(delta: number) {
@@ -72,7 +83,7 @@ export class Player extends MovingEntity {
       const projectile = new PlayerProjectile(this, direction);
       this.world.addProjectile(projectile);
 
-      // TODO play sound
+      playAudio(this, "playerShot");
     }
   }
 

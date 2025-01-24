@@ -14,7 +14,7 @@ export class AssetManager {
   private readonly loadingManager: THREE.LoadingManager;
   private readonly audioLoader: THREE.AudioLoader;
   private readonly audios: Map<string, any>;
-  
+
   public readonly audioListener: THREE.AudioListener;
 
   constructor() {
@@ -31,6 +31,17 @@ export class AssetManager {
         setTimeout(() => resolve(), 100);
       };
     });
+  }
+
+  getAudio(name: string): THREE.PositionalAudio {
+    const audio = this.audios.get(name);
+    if (audio === undefined) {
+      throw new Error(`Audio not found: ${name}`);
+    }
+    if (audio instanceof THREE.PositionalAudio) {
+      return audio;
+    }
+    throw new Error(`Unsupported audio type: ${audio}`);
   }
 
   cloneAudio(name: string): THREE.PositionalAudio {

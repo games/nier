@@ -7,8 +7,7 @@ const target = new Vector3();
 
 export class PlayerProjectile extends Projectile {
   public readonly isPlayerProjectile = true;
-
-  private obb: OBB;
+  public readonly obb: OBB;
 
   constructor(owner: Player, direction: Vector3) {
     super(owner.world);
