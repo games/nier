@@ -70,3 +70,42 @@ export function guard(world: World) {
     return guard;
   };
 }
+
+export function playerProjectile() {
+  return (maxInstances: number) => {
+    const geometry = new THREE.PlaneGeometry(0.2, 1);
+    geometry.rotateX(Math.PI * -0.5);
+    const material = new THREE.MeshBasicMaterial({ color: 0xfff9c2 });
+
+    const instance = new THREE.InstancedMesh(geometry, material, maxInstances);
+    instance.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    instance.frustumCulled = false;
+    return instance;
+  };
+}
+
+export function enemyProjectile() {
+  return (maxInstances: number) => {
+    const geometry = new THREE.SphereGeometry(0.4, 16, 16);
+    geometry.rotateX(Math.PI * -0.5);
+    const material = new THREE.MeshLambertMaterial({ color: 0x43254d });
+
+    const instance = new THREE.InstancedMesh(geometry, material, maxInstances);
+    instance.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    instance.frustumCulled = false;
+    return instance;
+  };
+}
+
+export function enemyDestructibleProjectile() {
+  return (maxInstances: number) => {
+    const geometry = new THREE.SphereGeometry(0.4, 16, 16);
+    geometry.rotateX(Math.PI * -0.5);
+    const material = new THREE.MeshLambertMaterial({ color: 0xf34d08 });
+
+    const instance = new THREE.InstancedMesh(geometry, material, maxInstances);
+    instance.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    instance.frustumCulled = false;
+    return instance;
+  };
+}

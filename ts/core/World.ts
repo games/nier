@@ -14,8 +14,11 @@ import { StageManager } from "./StageManager";
 import * as Prefabs from "../etc/Prefabs";
 import { Guard } from "../entities/Guard";
 import { playAudio } from "../entities/utils";
+import { EnemyProjectile } from "../entities/EnemyProjectile";
 
 const maxPlayerProjectiles = 100;
+const maxEnemyProjectiles = 200;
+const maxDestructileEnemyProjectiles = 200;
 const toVector = new YUKA.Vector3();
 const displacement = new YUKA.Vector3();
 
@@ -42,9 +45,16 @@ export class World {
   private playerProjectiles: PlayerProjectile[] = [];
   private playerProjectileMesh: THREE.InstancedMesh;
   private guards: Guard[] = [];
+  private enemyProjectiles: EnemyProjectile[] = [];
+  private enemyDestructibleProjectiles: EnemyProjectile[] = [];
+  private enemyProjectileMesh: THREE.InstancedMesh;
+  private enemyDestructibleProjectileMesh: THREE.InstancedMesh;
 
   public readonly prefabs = {
     guard: Prefabs.guard(this),
+    playerProjectile: Prefabs.playerProjectile(),
+    enemyProjectile: Prefabs.enemyProjectile(),
+    enemyDestructibleProjectile: Prefabs.enemyDestructibleProjectile(),
   };
 
   constructor() {
@@ -87,8 +97,14 @@ export class World {
     // this.scene.add(new THREE.CameraHelper(dirLight.shadow.camera));
 
     this.playerProjectileMesh =
-      createPlayerProjectileMesh(maxPlayerProjectiles);
+      this.prefabs.playerProjectile(maxPlayerProjectiles);
     this.scene.add(this.playerProjectileMesh);
+    this.enemyProjectileMesh =
+      this.prefabs.enemyProjectile(maxEnemyProjectiles);
+    this.scene.add(this.enemyProjectileMesh);
+    this.enemyDestructibleProjectileMesh =
+      this.prefabs.enemyDestructibleProjectile(maxDestructileEnemyProjectiles);
+    this.scene.add(this.enemyDestructibleProjectileMesh);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -170,6 +186,24 @@ export class World {
     }
     this.playerProjectileMesh.count = this.playerProjectiles.length;
     this.playerProjectileMesh.instanceMatrix.needsUpdate = true;
+
+    for (let i = 0; i < this.enemyProjectiles.length; i++) {
+      const projectile = this.enemyProjectiles[i];
+      this.enemyProjectileMesh.setMatrixAt(i, projectile.worldMatrix as any);
+    }
+    this.enemyProjectileMesh.count = this.enemyProjectiles.length;
+    this.enemyProjectileMesh.instanceMatrix.needsUpdate = true;
+
+    for (let i = 0; i < this.enemyDestructibleProjectiles.length; i++) {
+      const projectile = this.enemyDestructibleProjectiles[i];
+      this.enemyDestructibleProjectileMesh.setMatrixAt(
+        i,
+        projectile.worldMatrix as any,
+      );
+    }
+    this.enemyDestructibleProjectileMesh.count =
+      this.enemyDestructibleProjectiles.length;
+    this.enemyDestructibleProjectileMesh.instanceMatrix.needsUpdate = true;
   }
 
   private checkOverlappingEntites(a: YUKA.GameEntity, b: YUKA.GameEntity) {
@@ -249,6 +283,57 @@ export class World {
     }
   }
 
+  private checkEnemyProjectileCollision(projectile: EnemyProjectile) {
+    // const obstacles = this.obstacles;
+    const player = this.player!;
+    const playerProjectiles = this.playerProjectiles;
+
+    // obstacles
+    // projectiles
+    if (projectile.isDestructible) {
+      for (let i = playerProjectiles.length - 1; i >= 0; i--) {
+        const playerProjectile = playerProjectiles[i];
+        const squaredDistance = projectile.position.squaredDistanceTo(
+          playerProjectile.position,
+        );
+        const range =
+          projectile.boundingRadius + playerProjectile.boundingRadius;
+        if (squaredDistance <= range * range) {
+          if (
+            playerProjectile.obb.intersectsBoundingSphere(
+              projectile.boundingSphere,
+            )
+          ) {
+            this.removeProjectile(playerProjectile);
+            this.removeProjectile(projectile);
+            return;
+          }
+        }
+      }
+    }
+
+    // player
+    const squaredDistance = projectile.position.squaredDistanceTo(
+      player.position,
+    );
+    const range = projectile.boundingRadius + player.boundingRadius;
+    if (squaredDistance <= range * range) {
+      if (player.obb.intersectsBoundingSphere(projectile.boundingSphere)) {
+        projectile.sendMessage(player, "hit");
+        this.removeProjectile(projectile);
+      }
+    }
+  }
+
+  private checkEnemyProjectileCollisions() {
+    for (let i = 0; i < this.enemyProjectiles.length; i++) {
+      this.checkEnemyProjectileCollision(this.enemyProjectiles[i]);
+    }
+    for (let i = 0; i < this.enemyDestructibleProjectiles.length; i++) {
+      this.checkEnemyProjectileCollision(this.enemyDestructibleProjectiles[i]);
+    }
+  }
+
   private update() {
     const delta = this.time.update().getDelta();
     if (this.active) {
@@ -260,6 +345,7 @@ export class World {
       this.enforceNonPenetrationConstraint();
       this.checkPlayerCollision();
       this.checkPlayerProjectileCollisions();
+      this.checkEnemyProjectileCollisions();
 
       // render
       this.updateProjectileMeshes();
@@ -305,6 +391,12 @@ export class World {
   addProjectile(projectile: Projectile) {
     if (projectile instanceof PlayerProjectile) {
       this.playerProjectiles.push(projectile);
+    } else if (projectile instanceof EnemyProjectile) {
+      if (projectile.isDestructible) {
+        this.enemyDestructibleProjectiles.push(projectile);
+      } else {
+        this.enemyProjectiles.push(projectile);
+      }
     }
 
     this.entityManager.add(projectile);
@@ -315,6 +407,18 @@ export class World {
       const index = this.playerProjectiles.indexOf(projectile);
       if (index !== -1) {
         this.playerProjectiles.splice(index, 1);
+      }
+    } else if (projectile instanceof EnemyProjectile) {
+      if (projectile.isDestructible) {
+        const index = this.enemyDestructibleProjectiles.indexOf(projectile);
+        if (index !== -1) {
+          this.enemyDestructibleProjectiles.splice(index, 1);
+        }
+      } else {
+        const index = this.enemyProjectiles.indexOf(projectile);
+        if (index !== -1) {
+          this.enemyProjectiles.splice(index, 1);
+        }
       }
     }
 

@@ -1,4 +1,12 @@
-import { AABB, MovingEntity, MathUtils, OBB, Ray, Vector3 } from "yuka";
+import {
+  AABB,
+  MovingEntity,
+  MathUtils,
+  OBB,
+  Ray,
+  Vector3,
+  Telegram,
+} from "yuka";
 import * as THREE from "three";
 import { World } from "../core/World";
 import { ParticleSystem } from "../core/ParticleSystem";
@@ -87,7 +95,23 @@ export class Player extends MovingEntity {
     }
   }
 
+  handleMessage(telegram: Telegram) {
+    if (telegram.message === "hit") {
+      playAudio(this, "playerHit");
+      this.healthPoints--;
+      if (this.healthPoints === 0) {
+        playAudio(this, "playerExplode");
+      }
+    }
+
+    return true;
+  }
+
   private updateParticles(delta: number) {}
 
-  private restrictMovement() {}
+  private restrictMovement() {
+    if (this.velocity.squaredLength() === 0) {
+      return;
+    }
+  }
 }

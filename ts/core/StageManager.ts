@@ -1,3 +1,4 @@
+import { DefaultCombatPattern } from "../patterns/CombatPattern";
 import { LeftRightMovementPattern } from "../patterns/MovementPatterns";
 import { World } from "./World";
 
@@ -13,7 +14,7 @@ const stages: StageLoader[] = [
 
     const guard = world.prefabs.guard();
     guard.position.set(0, 0.5, -4);
-    // guard.setCombatPattern(new DefaultCombatPattern());
+    guard.setCombatPattern(new DefaultCombatPattern(world));
     guard.setMovementPattern(new LeftRightMovementPattern(world));
     world.addGuard(guard);
   },
