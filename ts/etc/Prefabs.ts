@@ -3,6 +3,7 @@ import { World } from "../core/World";
 import { HitShader, ProtectionShader } from "./Shaders";
 import { Guard } from "../entities/Guard";
 import { GameEntity } from "yuka";
+import { Tower } from "../entities/Tower";
 
 function sync(entity: GameEntity, renderComponent: THREE.Object3D) {
   renderComponent.matrix.copy(entity.worldMatrix as any);
@@ -119,5 +120,33 @@ export function obstacle() {
     instance.frustumCulled = false;
     instance.castShadow = true;
     return instance;
+  };
+}
+
+export function tower(world: World) {
+  const towerGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16);
+  const towerMaterial = new THREE.MeshLambertMaterial({ color: 0x333132 });
+  const towerMesh = new THREE.Mesh(towerGeometry, towerMaterial);
+  towerMesh.matrixAutoUpdate = false;
+  towerMesh.castShadow = true;
+
+  return () => {
+    const assets = world.assetManager;
+    const mesh = towerMesh.clone();
+    const tower = new Tower(world, mesh);
+
+    const enemyShot = assets.cloneAudio("enemyShot");
+    const enemyExplode = assets.cloneAudio("enemyExplode");
+    const enemyHit = assets.cloneAudio("enemyHit");
+
+    tower.audios.set("enemyShot", enemyShot);
+    tower.audios.set("enemyExplode", enemyExplode);
+    tower.audios.set("enemyHit", enemyHit);
+
+    towerMesh.add(enemyShot);
+    towerMesh.add(enemyExplode);
+    towerMesh.add(enemyHit);
+
+    return tower;
   };
 }

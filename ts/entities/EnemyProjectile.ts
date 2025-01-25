@@ -1,4 +1,4 @@
-import { BoundingSphere, MovingEntity, Vector3 } from "yuka";
+import { BoundingSphere, GameEntity, Vector3 } from "yuka";
 import { Projectile } from "./Projectile";
 import { World } from "../core/World";
 
@@ -9,7 +9,7 @@ export class EnemyProjectile extends Projectile {
   public readonly boundingSphere: BoundingSphere;
   public isDestructible = false;
 
-  constructor(world: World, owner: MovingEntity, direction: Vector3) {
+  constructor(world: World, owner: GameEntity, direction: Vector3) {
     super(world);
 
     this.expiryTime = world.time.getElapsed() + 5;

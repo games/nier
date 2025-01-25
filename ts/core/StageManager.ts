@@ -1,5 +1,8 @@
 import { Obstacle } from "../entities/Obstacle";
-import { DefaultCombatPattern } from "../patterns/CombatPattern";
+import {
+  DefaultCombatPattern,
+  SpreadCombatPattern,
+} from "../patterns/CombatPattern";
 import { LeftRightMovementPattern } from "../patterns/MovementPatterns";
 import { World } from "./World";
 
@@ -24,6 +27,15 @@ const stages: StageLoader[] = [
       obstacle.position.set(6 - i * 3, 0.5, 2);
       world.addObstacle(obstacle);
     }
+
+    const tower = world.prefabs.tower();
+    const towerCombatPattern = new SpreadCombatPattern(world);
+    towerCombatPattern.projectilesPerShot = 4;
+    towerCombatPattern.enableRotation = false;
+    tower.setCombatPattern(towerCombatPattern);
+    tower.position.set(0, 0.5, 0);
+    tower.updateBoundingVolumes();
+    world.addTower(tower);
   },
 ];
 

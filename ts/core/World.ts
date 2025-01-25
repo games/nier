@@ -10,9 +10,10 @@ import { PlayerProjectile } from "../entities/PlayerProjectile";
 import { StageManager } from "./StageManager";
 import * as Prefabs from "../etc/Prefabs";
 import { Guard } from "../entities/Guard";
-import { playAudio } from "../entities/utils";
+import { intersects, playAudio } from "../entities/utils";
 import { EnemyProjectile } from "../entities/EnemyProjectile";
 import { Obstacle } from "../entities/Obstacle";
+import { Tower } from "../entities/Tower";
 
 const maxPlayerProjectiles = 100;
 const maxEnemyProjectiles = 200;
@@ -50,6 +51,7 @@ export class World {
   private enemyDestructibleProjectileMesh: THREE.InstancedMesh;
   private obstacles: Obstacle[] = [];
   private obstacleMesh: THREE.InstancedMesh;
+  private towers: Tower[] = [];
 
   public readonly prefabs = {
     guard: Prefabs.guard(this),
@@ -57,6 +59,7 @@ export class World {
     enemyProjectile: Prefabs.enemyProjectile(),
     enemyDestructibleProjectile: Prefabs.enemyDestructibleProjectile(),
     obstacle: Prefabs.obstacle(),
+    tower: Prefabs.tower(this),
   };
 
   constructor() {
@@ -265,16 +268,17 @@ export class World {
       return;
     }
 
-    const guards = this.guards;
-    for (let i = 0; i < guards.length; i++) {
-      const guard = guards[i];
-      const squaredDistance = player.position.squaredDistanceTo(guard.position);
-      const range = player.boundingRadius + guard.boundingRadius;
-      if (squaredDistance <= range * range) {
-        if (player.obb.intersectsBoundingSphere(guard.boundingSphere)) {
-          player.healthPoints = 0;
-          playAudio(player, "playerExplode");
-        }
+    for (let i = 0; i < this.guards.length; i++) {
+      if (intersects(player, this.guards[i])) {
+        player.healthPoints = 0;
+        playAudio(player, "playerExplode");
+      }
+    }
+
+    for (let i = 0; i < this.towers.length; i++) {
+      if (intersects(player, this.towers[i])) {
+        player.healthPoints = 0;
+        playAudio(player, "playerExplode");
       }
     }
   }
@@ -284,20 +288,23 @@ export class World {
     // guards
     for (let i = 0; i < this.guards.length; i++) {
       const guard = this.guards[i];
-      const squaredDistance = projectile.position.squaredDistanceTo(
-        guard.position,
-      );
-      const range = projectile.boundingRadius + guard.boundingRadius;
-      if (squaredDistance <= range * range) {
-        if (projectile.obb.intersectsBoundingSphere(guard.boundingSphere)) {
-          projectile.sendMessage(guard, "hit");
-          this.removeProjectile(projectile);
-          return;
-        }
+      if (intersects(projectile, guard)) {
+        projectile.sendMessage(guard, "hit");
+        this.removeProjectile(projectile);
+        return;
       }
     }
     // pursuers
     // towers
+    for (let i = 0; i < this.towers.length; i++) {
+      const tower = this.towers[i];
+      if (intersects(projectile, tower)) {
+        projectile.sendMessage(tower, "hit");
+        this.removeProjectile(projectile);
+        return;
+      }
+    }
+
     // obstacles
     for (let i = 0; i < this.obstacles.length; i++) {
       const obstacle = this.obstacles[i];
@@ -426,6 +433,9 @@ export class World {
     for (let i = this.playerProjectiles.length - 1; i >= 0; i--) {
       this.removeProjectile(this.playerProjectiles[i]);
     }
+    for (let i = this.towers.length - 1; i >= 0; i--) {
+      this.removeTower(this.towers[i]);
+    }
     this.updateObstaclesMeshes(true);
   }
 
@@ -523,6 +533,19 @@ export class World {
       this.obstacles.splice(index, 1);
     }
     this.entityManager.remove(obstacle);
+  }
+
+  addTower(tower: Tower) {
+    this.towers.push(tower);
+    this.entityManager.add(tower);
+    this.scene.add(tower.mesh);
+  }
+
+  removeTower(tower: Tower) {
+    const index = this.towers.indexOf(tower);
+    this.towers.splice(index, 1);
+    this.entityManager.remove(tower);
+    this.scene.remove(tower.mesh);
   }
 
   updateField(x: number, y: number, z: number) {

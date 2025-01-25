@@ -1,4 +1,4 @@
-import { GameEntity, MovingEntity, State, Vector3 } from "yuka";
+import { GameEntity, State, Vector3 } from "yuka";
 import { World } from "../core/World";
 import { EnemyProjectile } from "../entities/EnemyProjectile";
 import { playAudio } from "../entities/utils";
@@ -17,13 +17,13 @@ class CombatPattern<T extends GameEntity> extends State<T> {
     super();
   }
 
-  enter(owner: T): void {
+  enter(_owner: T): void {
     this.lastShotTime = this.world.time.getElapsed();
   }
 }
 
 export class DefaultCombatPattern<
-  T extends MovingEntity,
+  T extends GameEntity,
 > extends CombatPattern<T> {
   private angularStep = Math.PI * 0.167; // 30 degrees;
 
@@ -46,6 +46,48 @@ export class DefaultCombatPattern<
         if (Math.random() <= this.destructibleProjectiles) {
           projectile.isDestructible = true;
         }
+        this.world.addProjectile(projectile);
+      }
+      playAudio(enemy as any, "enemyShot");
+    }
+  }
+}
+
+export class SpreadCombatPattern<
+  T extends GameEntity,
+> extends CombatPattern<T> {
+  public enableRotation = true;
+  public rotationSpeed = 1;
+
+  constructor(public readonly world: World) {
+    super(world);
+    this.shotsPerSecond = 1;
+    this.projectilesPerShot = 6;
+  }
+
+  execute(enemy: T) {
+    const elapsedTime = this.world.time.getElapsed();
+
+    if (elapsedTime - this.lastShotTime > 1 / this.shotsPerSecond) {
+      this.lastShotTime = elapsedTime;
+
+      for (let i = 0; i < this.projectilesPerShot; i++) {
+        let s = TWO_PI * (i / this.projectilesPerShot);
+
+        if (this.enableRotation) s += elapsedTime * this.rotationSpeed;
+
+        target.copy(enemy.position);
+        target.x += Math.sin(s);
+        target.z += Math.cos(s);
+
+        direction.subVectors(target, enemy.position).normalize();
+        direction.applyRotation(enemy.rotation);
+
+        const projectile = new EnemyProjectile(this.world, enemy, direction);
+
+        if (Math.random() <= this.destructibleProjectiles)
+          projectile.isDestructible = true;
+
         this.world.addProjectile(projectile);
       }
       playAudio(enemy as any, "enemyShot");
