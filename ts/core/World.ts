@@ -49,7 +49,7 @@ export class World {
   private enemyDestructibleProjectiles: EnemyProjectile[] = [];
   private enemyProjectileMesh: THREE.InstancedMesh;
   private enemyDestructibleProjectileMesh: THREE.InstancedMesh;
-  private obstacles: Obstacle[] = [];
+  public obstacles: Obstacle[] = [];
   private obstacleMesh: THREE.InstancedMesh;
   private towers: Tower[] = [];
 

@@ -113,5 +113,52 @@ export class Player extends MovingEntity {
     if (this.velocity.squaredLength() === 0) {
       return;
     }
+
+    const world = this.world;
+    const obstacles = world.obstacles;
+    for (let i = 0; i < obstacles.length; i++) {
+      const obstacle = obstacles[i];
+      aabb.copy(obstacle.aabb);
+      aabb.max.addScalar(this.boundingRadius * 0.5);
+      aabb.min.subScalar(this.boundingRadius * 0.5);
+
+      ray.origin.copy(this.position);
+      ray.direction.copy(this.velocity).normalize();
+
+      // perform ray/AABB intersection test
+      if (ray.intersectAABB(aabb, intersectionPoint) !== null) {
+        const squaredDistance =
+          this.position.squaredDistanceTo(intersectionPoint);
+        if (squaredDistance <= this.boundingRadius * this.boundingRadius) {
+          // derive normal vector
+          aabb.getNormalFromSurfacePoint(intersectionPoint, intersectionNormal);
+          // compute reflection vector
+          reflectionVector.copy(ray.direction).reflect(intersectionNormal);
+          // compute new velocity vector
+          const speed = this.getSpeed();
+          this.velocity.addVectors(ray.direction, reflectionVector).normalize();
+          const f = 1 - Math.abs(intersectionNormal.dot(ray.direction));
+          this.velocity.multiplyScalar(speed * f);
+        }
+      }
+    }
+
+    // ensure player does not leave the game area
+    const fieldXHalfSize = world.field.x / 2;
+    const fieldZHalfSize = world.field.z / 2;
+
+    this.position.x = MathUtils.clamp(
+      this.position.x,
+      -(fieldXHalfSize - this.boundingRadius),
+      fieldXHalfSize - this.boundingRadius,
+    );
+
+    this.position.z = MathUtils.clamp(
+      this.position.z,
+      -(fieldZHalfSize - this.boundingRadius),
+      fieldZHalfSize - this.boundingRadius,
+    );
+
+    return this;
   }
 }
