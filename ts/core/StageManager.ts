@@ -1,3 +1,4 @@
+import { Obstacle } from "../entities/Obstacle";
 import { DefaultCombatPattern } from "../patterns/CombatPattern";
 import { LeftRightMovementPattern } from "../patterns/MovementPatterns";
 import { World } from "./World";
@@ -17,6 +18,12 @@ const stages: StageLoader[] = [
     guard.setCombatPattern(new DefaultCombatPattern(world));
     guard.setMovementPattern(new LeftRightMovementPattern(world));
     world.addGuard(guard);
+
+    for (let i = 0; i < 5; i++) {
+      const obstacle = new Obstacle();
+      obstacle.position.set(6 - i * 3, 0.5, 2);
+      world.addObstacle(obstacle);
+    }
   },
 ];
 

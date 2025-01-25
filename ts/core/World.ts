@@ -12,10 +12,12 @@ import * as Prefabs from "../etc/Prefabs";
 import { Guard } from "../entities/Guard";
 import { playAudio } from "../entities/utils";
 import { EnemyProjectile } from "../entities/EnemyProjectile";
+import { Obstacle } from "../entities/Obstacle";
 
 const maxPlayerProjectiles = 100;
 const maxEnemyProjectiles = 200;
 const maxDestructileEnemyProjectiles = 200;
+const maxObstacles = 50;
 const toVector = new YUKA.Vector3();
 const displacement = new YUKA.Vector3();
 
@@ -46,12 +48,15 @@ export class World {
   private enemyDestructibleProjectiles: EnemyProjectile[] = [];
   private enemyProjectileMesh: THREE.InstancedMesh;
   private enemyDestructibleProjectileMesh: THREE.InstancedMesh;
+  private obstacles: Obstacle[] = [];
+  private obstacleMesh: THREE.InstancedMesh;
 
   public readonly prefabs = {
     guard: Prefabs.guard(this),
     playerProjectile: Prefabs.playerProjectile(),
     enemyProjectile: Prefabs.enemyProjectile(),
     enemyDestructibleProjectile: Prefabs.enemyDestructibleProjectile(),
+    obstacle: Prefabs.obstacle(),
   };
 
   constructor() {
@@ -102,6 +107,8 @@ export class World {
     this.enemyDestructibleProjectileMesh =
       this.prefabs.enemyDestructibleProjectile(maxDestructileEnemyProjectiles);
     this.scene.add(this.enemyDestructibleProjectileMesh);
+    this.obstacleMesh = this.prefabs.obstacle(maxObstacles);
+    this.scene.add(this.obstacleMesh);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -176,6 +183,22 @@ export class World {
     this.controls.setPosition(0, 0, 0);
   }
 
+  private updateObstaclesMeshes(force: boolean) {
+    let needsUpdate = force;
+    for (let i = 0; i < this.obstacles.length; i++) {
+      const obstacle = this.obstacles[i];
+      if (obstacle.needsUpdate) {
+        obstacle.updateBoundingVolumes();
+        this.obstacleMesh.setMatrixAt(i, obstacle.worldMatrix as any);
+        needsUpdate = true;
+      }
+    }
+    if (needsUpdate) {
+      this.obstacleMesh.count = this.obstacles.length;
+      this.obstacleMesh.instanceMatrix.needsUpdate = true;
+    }
+  }
+
   private updateProjectileMeshes() {
     for (let i = 0; i < this.playerProjectiles.length; i++) {
       const projectile = this.playerProjectiles[i];
@@ -220,11 +243,16 @@ export class World {
     // guards
     for (let i = 0; i < guards.length; i++) {
       const guard = guards[i];
+
       for (let j = 0; j < guards.length; j++) {
         const entity = guards[j];
         if (guard !== entity) {
           this.checkOverlappingEntites(guard, entity);
         }
+      }
+      for (let j = 0; j < this.obstacles.length; j++) {
+        const entity = this.obstacles[j];
+        this.checkOverlappingEntites(guard, entity);
       }
 
       // TODO pursuers, towers and obstacles
@@ -271,6 +299,19 @@ export class World {
     // pursuers
     // towers
     // obstacles
+    for (let i = 0; i < this.obstacles.length; i++) {
+      const obstacle = this.obstacles[i];
+      const squaredDistance = projectile.position.squaredDistanceTo(
+        obstacle.position,
+      );
+      const range = projectile.boundingRadius + obstacle.boundingRadius;
+      if (squaredDistance <= range * range) {
+        if (projectile.obb.intersectsOBB(obstacle.obb)) {
+          this.removeProjectile(projectile);
+          return;
+        }
+      }
+    }
   }
 
   private checkPlayerProjectileCollisions() {
@@ -281,11 +322,25 @@ export class World {
   }
 
   private checkEnemyProjectileCollision(projectile: EnemyProjectile) {
-    // const obstacles = this.obstacles;
+    const obstacles = this.obstacles;
     const player = this.player!;
     const playerProjectiles = this.playerProjectiles;
 
     // obstacles
+    for (let i = 0; i < obstacles.length; i++) {
+      const obstacle = obstacles[i];
+      const squaredDistance = projectile.position.squaredDistanceTo(
+        obstacle.position,
+      );
+      const range = projectile.boundingRadius + obstacle.boundingRadius;
+      if (squaredDistance <= range * range) {
+        if (obstacle.obb.intersectsBoundingSphere(projectile.boundingSphere)) {
+          this.removeProjectile(projectile);
+          return;
+        }
+      }
+    }
+
     // projectiles
     if (projectile.isDestructible) {
       for (let i = playerProjectiles.length - 1; i >= 0; i--) {
@@ -343,8 +398,10 @@ export class World {
       this.checkPlayerCollision();
       this.checkPlayerProjectileCollisions();
       this.checkEnemyProjectileCollisions();
+      // this.checkGameStatus();
 
       // render
+      this.updateObstaclesMeshes(false);
       this.updateProjectileMeshes();
 
       this.renderer.render(this.scene, this.camera);
@@ -353,7 +410,24 @@ export class World {
     }
   }
 
-  private clearStage() {}
+  private clearStage() {
+    for (let i = this.guards.length - 1; i >= 0; i--) {
+      this.removeGuard(this.guards[i]);
+    }
+    for (let i = this.obstacles.length - 1; i >= 0; i--) {
+      this.removeObstacle(this.obstacles[i]);
+    }
+    for (let i = this.enemyProjectiles.length - 1; i >= 0; i--) {
+      this.removeProjectile(this.enemyProjectiles[i]);
+    }
+    for (let i = this.enemyDestructibleProjectiles.length - 1; i >= 0; i--) {
+      this.removeProjectile(this.enemyDestructibleProjectiles[i]);
+    }
+    for (let i = this.playerProjectiles.length - 1; i >= 0; i--) {
+      this.removeProjectile(this.playerProjectiles[i]);
+    }
+    this.updateObstaclesMeshes(true);
+  }
 
   private loadStage(id: number) {
     this.clearStage();
@@ -436,6 +510,19 @@ export class World {
 
     this.entityManager.remove(guard);
     this.scene.remove(guard.mesh);
+  }
+
+  addObstacle(obstacle: Obstacle) {
+    this.obstacles.push(obstacle);
+    this.entityManager.add(obstacle);
+  }
+
+  removeObstacle(obstacle: Obstacle) {
+    const index = this.obstacles.indexOf(obstacle);
+    if (index !== -1) {
+      this.obstacles.splice(index, 1);
+    }
+    this.entityManager.remove(obstacle);
   }
 
   updateField(x: number, y: number, z: number) {

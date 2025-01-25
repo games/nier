@@ -109,3 +109,15 @@ export function enemyDestructibleProjectile() {
     return instance;
   };
 }
+
+export function obstacle() {
+  return (maxInstances: number) => {
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshLambertMaterial({ color: 0xdedad3 });
+
+    const instance = new THREE.InstancedMesh(geometry, material, maxInstances);
+    instance.frustumCulled = false;
+    instance.castShadow = true;
+    return instance;
+  };
+}
