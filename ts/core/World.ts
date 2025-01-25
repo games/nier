@@ -181,6 +181,7 @@ export class World {
     this.player = new Player(this);
     this.entityManager.add(this.player);
     this.scene.add(this.player.mesh);
+    this.scene.add(this.player.particleSystem.points!);
 
     this.controls = new VehicleControls(this.player, this.camera);
     this.controls.setPosition(0, 0, 0);
@@ -437,6 +438,7 @@ export class World {
       this.removeTower(this.towers[i]);
     }
     this.updateObstaclesMeshes(true);
+    this.player?.particleSystem.clear();
   }
 
   private loadStage(id: number) {

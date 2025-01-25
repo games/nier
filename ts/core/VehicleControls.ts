@@ -32,7 +32,7 @@ export class VehicleControls extends EventDispatcher {
 
   constructor(
     private readonly owner: Player,
-    private readonly camera: THREE.Camera
+    private readonly camera: THREE.Camera,
   ) {
     super();
 

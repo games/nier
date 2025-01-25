@@ -9,7 +9,7 @@ import {
 } from "yuka";
 import * as THREE from "three";
 import { World } from "../core/World";
-import { ParticleSystem } from "../core/ParticleSystem";
+import { Particle, ParticleSystem } from "../core/ParticleSystem";
 import { playAudio, sync } from "./utils";
 import { PlayerProjectile } from "./PlayerProjectile";
 
@@ -30,7 +30,7 @@ export class Player extends MovingEntity {
   public readonly obb: OBB;
   public readonly audios: Map<string, any>;
   private maxParticles = 20;
-  private particleSystem: ParticleSystem;
+  public readonly particleSystem: ParticleSystem;
   private particlesPerSecond = 6;
   private particlesNextEmissionTime = 0;
   private particlesElapsedTime = 0;
@@ -107,7 +107,34 @@ export class Player extends MovingEntity {
     return true;
   }
 
-  private updateParticles(delta: number) {}
+  private updateParticles(delta: number) {
+    const timeScale = this.getSpeed() / this.maxSpeed; // [0,1]
+    const effectiveDelta = delta * timeScale;
+    this.particlesElapsedTime += effectiveDelta;
+
+    if (this.particlesElapsedTime > this.particlesNextEmissionTime) {
+      const t = 1 / this.particlesPerSecond;
+
+      this.particlesNextEmissionTime =
+        this.particlesElapsedTime + t / 2 + (t / 2) * Math.random();
+
+      // emit new particle
+      const particle = new Particle();
+      offset.x = Math.random() * 0.3;
+      offset.y = Math.random() * 0.3;
+      offset.z = Math.random() * 0.3;
+      particle.position.copy(this.position).add(offset);
+      particle.lifetime = Math.random() * 0.7 + 0.3;
+      particle.opacity = Math.random() * 0.5 + 0.5;
+      particle.size = Math.floor(Math.random() * 10) + 10;
+      particle.angle = Math.round(Math.random()) * Math.PI * Math.random();
+
+      this.particleSystem.add(particle);
+    }
+
+    // update the system itself
+    this.particleSystem.update(delta);
+  }
 
   private restrictMovement() {
     if (this.velocity.squaredLength() === 0) {
