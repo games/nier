@@ -1,5 +1,4 @@
 import { OBB, Vector3 } from "yuka";
-import * as THREE from "three";
 import { Player } from "./Player";
 import { Projectile } from "./Projectile";
 
@@ -32,15 +31,4 @@ export class PlayerProjectile extends Projectile {
     this.obb.center.copy(this.position);
     return this;
   }
-}
-
-export function createPlayerProjectileMesh(maxInstances: number) {
-  const geometry = new THREE.PlaneGeometry(0.2, 1);
-  geometry.rotateX(Math.PI * -0.5);
-  const material = new THREE.MeshBasicMaterial({ color: 0xfff9c2 });
-
-  const instance = new THREE.InstancedMesh(geometry, material, maxInstances);
-  instance.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-  instance.frustumCulled = false;
-  return instance;
 }

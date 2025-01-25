@@ -6,10 +6,7 @@ import { assets } from "../manifest";
 import { Player } from "../entities/Player";
 import { VehicleControls } from "./VehicleControls";
 import { Projectile } from "../entities/Projectile";
-import {
-  createPlayerProjectileMesh,
-  PlayerProjectile,
-} from "../entities/PlayerProjectile";
+import { PlayerProjectile } from "../entities/PlayerProjectile";
 import { StageManager } from "./StageManager";
 import * as Prefabs from "../etc/Prefabs";
 import { Guard } from "../entities/Guard";
