@@ -26,18 +26,19 @@
   "homepage": "https://github.com/Mugen87/nier#readme",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.0",
+    "@types/three": "^0.172.0",
+    "@types/yuka": "^0.7.4",
     "concurrently": "^9.1.2",
     "eslint": "^9.18.0",
     "eslint-config-mdcs": "^5.0.0",
+    "gltfpack": "^0.22.0",
     "rollup": "^4.31.0",
     "serve": "^14.2.4",
     "typescript": "^5.7.3",
-    "vite": "^6.0.11",
-    "@types/three": "^0.172.0",
-    "@types/yuka": "^0.7.4"
+    "vite": "^6.0.11"
   },
   "dependencies": {
-    "three": "0.172.0",
+    "three": "0.173.0",
     "yuka": "0.7.8"
   }
 }

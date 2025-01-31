@@ -61,4 +61,19 @@ export const assets = [
     url: "assets/audio/buttonClick.ogg",
     distance: 20,
   },
+  {
+    type: "GLB",
+    name: "jet",
+    url: "assets/models/jet.gltf",
+  },
+  {
+    type: "GLB",
+    name: "obstacle",
+    url: "assets/models/obstacle.gltf",
+  },
+  {
+    type: "Texture",
+    name: "texture1",
+    url: "assets/models/Gemini_Generated_Image_834nb9834nb9834n.jpg",
+  },
 ] as readonly Asset[];

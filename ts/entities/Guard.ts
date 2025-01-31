@@ -51,6 +51,10 @@ export class Guard extends Vehicle {
   }
 
   disableProtection() {
+    if (!this.protected) {
+      return;
+    }
+
     this.protected = false;
     if (this.protectionMesh) {
       this.protectionMesh.visible = false;

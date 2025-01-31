@@ -10,7 +10,7 @@ import {
 import * as THREE from "three";
 import { World } from "../core/World";
 import { Particle, ParticleSystem } from "../core/ParticleSystem";
-import { playAudio, sync } from "./utils";
+import { playAudio } from "./utils";
 import { PlayerProjectile } from "./PlayerProjectile";
 
 const aabb = new AABB();
@@ -35,9 +35,10 @@ export class Player extends MovingEntity {
   private particlesNextEmissionTime = 0;
   private particlesElapsedTime = 0;
 
-  public readonly mesh: THREE.Mesh;
-
-  constructor(public readonly world: World) {
+  constructor(
+    public readonly world: World,
+    public readonly mesh: THREE.Mesh,
+  ) {
     super();
 
     this.maxSpeed = 6;
@@ -50,25 +51,6 @@ export class Player extends MovingEntity {
     this.audios = new Map();
     this.particleSystem = new ParticleSystem();
     this.particleSystem.init(this.maxParticles);
-
-    const geometry = new THREE.ConeGeometry(0.2, 1, 8);
-    geometry.rotateX(Math.PI * 0.5);
-    const material = new THREE.MeshLambertMaterial({ color: 0xdedad3 });
-    this.mesh = new THREE.Mesh(geometry, material);
-    this.mesh.matrixAutoUpdate = false;
-    this.mesh.castShadow = true;
-    this.setRenderComponent(this.mesh, sync);
-
-    const assetManager = this.world.assetManager;
-    const playerShot = assetManager.getAudio("playerShot");
-    const playerHit = assetManager.getAudio("playerHit");
-    const playerExplode = assetManager.getAudio("playerExplode");
-
-    this.mesh.add(playerShot, playerHit, playerExplode);
-
-    this.audios.set("playerShot", playerShot);
-    this.audios.set("playerHit", playerHit);
-    this.audios.set("playerExplode", playerExplode);
   }
 
   update(delta: number) {

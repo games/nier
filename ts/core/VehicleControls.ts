@@ -50,6 +50,8 @@ export class VehicleControls extends EventDispatcher {
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
+    this.onPointerlockChange = this.onPointerlockChange.bind(this);
+    this.onPointerlockError = this.onPointerlockError.bind(this);
   }
 
   connect() {
@@ -58,6 +60,18 @@ export class VehicleControls extends EventDispatcher {
     document.addEventListener("mousemove", this.onMouseMove, false);
     document.addEventListener("mousedown", this.onMouseDown, false);
     document.addEventListener("mouseup", this.onMouseUp, false);
+    document.addEventListener(
+      "pointerlockchange",
+      this.onPointerlockChange,
+      false,
+    );
+    document.addEventListener(
+      "pointerlockerror",
+      this.onPointerlockError,
+      false,
+    );
+
+    document.body.requestPointerLock();
   }
 
   disconnect() {
@@ -66,6 +80,16 @@ export class VehicleControls extends EventDispatcher {
     document.removeEventListener("mousemove", this.onMouseMove, false);
     document.removeEventListener("mousedown", this.onMouseDown, false);
     document.removeEventListener("mouseup", this.onMouseUp, false);
+    document.removeEventListener(
+      "pointerlockchange",
+      this.onPointerlockChange,
+      false,
+    );
+    document.removeEventListener(
+      "pointerlockerror",
+      this.onPointerlockError,
+      false,
+    );
   }
 
   exit() {
@@ -109,6 +133,14 @@ export class VehicleControls extends EventDispatcher {
       this.camera.position.x -= offsetX * delta * this.cameraMovementSpeed;
     if (offsetZ !== 0)
       this.camera.position.z -= offsetZ * delta * this.cameraMovementSpeed;
+  }
+
+  reset() {
+    this.input.forward = false;
+    this.input.backward = false;
+    this.input.left = false;
+    this.input.right = false;
+    this.input.mouseDown = false;
   }
 
   resetRotation() {
@@ -193,5 +225,21 @@ export class VehicleControls extends EventDispatcher {
     if (event.button === 0) {
       this.input.mouseDown = false;
     }
+  }
+
+  private onPointerlockChange() {
+    if (document.pointerLockElement === document.body) {
+      this.dispatchEvent({ type: "lock" });
+    } else {
+      this.disconnect();
+
+      this.reset();
+
+      this.dispatchEvent({ type: "unlock" });
+    }
+  }
+
+  private onPointerlockError() {
+    console.warn("YUKA.VehicleControls: Unable to use Pointer Lock API.");
   }
 }

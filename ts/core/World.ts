@@ -50,7 +50,7 @@ export class World {
   private enemyProjectileMesh: THREE.InstancedMesh;
   private enemyDestructibleProjectileMesh: THREE.InstancedMesh;
   public obstacles: Obstacle[] = [];
-  private obstacleMesh: THREE.InstancedMesh;
+  private obstacleMesh?: THREE.InstancedMesh;
   private towers: Tower[] = [];
 
   public readonly prefabs = {
@@ -58,8 +58,9 @@ export class World {
     playerProjectile: Prefabs.playerProjectile(),
     enemyProjectile: Prefabs.enemyProjectile(),
     enemyDestructibleProjectile: Prefabs.enemyDestructibleProjectile(),
-    obstacle: Prefabs.obstacle(),
+    obstacle: Prefabs.obstacle(this),
     tower: Prefabs.tower(this),
+    player: Prefabs.player(this),
   };
 
   constructor() {
@@ -110,8 +111,8 @@ export class World {
     this.enemyDestructibleProjectileMesh =
       this.prefabs.enemyDestructibleProjectile(maxDestructileEnemyProjectiles);
     this.scene.add(this.enemyDestructibleProjectileMesh);
-    this.obstacleMesh = this.prefabs.obstacle(maxObstacles);
-    this.scene.add(this.obstacleMesh);
+    // this.obstacleMesh = this.prefabs.obstacle(maxObstacles);
+    // this.scene.add(this.obstacleMesh);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -145,6 +146,10 @@ export class World {
     this.fieldMesh.updateMatrix();
     this.fieldMesh.receiveShadow = true;
     this.scene.add(this.fieldMesh);
+
+    // obstacles
+    this.obstacleMesh = this.prefabs.obstacle(maxObstacles);
+    this.scene.add(this.obstacleMesh);
   }
 
   private initBackground() {
@@ -178,7 +183,7 @@ export class World {
   }
 
   private initPlayer() {
-    this.player = new Player(this);
+    this.player = this.prefabs.player();
     this.entityManager.add(this.player);
     this.scene.add(this.player.mesh);
     this.scene.add(this.player.particleSystem.points!);
@@ -188,6 +193,9 @@ export class World {
   }
 
   private updateObstaclesMeshes(force: boolean) {
+    if (!this.obstacleMesh) {
+      return;
+    }
     let needsUpdate = force;
     for (let i = 0; i < this.obstacles.length; i++) {
       const obstacle = this.obstacles[i];
@@ -394,6 +402,12 @@ export class World {
     }
   }
 
+  private checkGameStatus() {
+    if (this.towers.length === 0) {
+      this.guards.forEach((x) => x.disableProtection());
+    }
+  }
+
   private update() {
     const delta = this.time.update().getDelta();
     if (this.active) {
@@ -406,7 +420,7 @@ export class World {
       this.checkPlayerCollision();
       this.checkPlayerProjectileCollisions();
       this.checkEnemyProjectileCollisions();
-      // this.checkGameStatus();
+      this.checkGameStatus();
 
       // render
       this.updateObstaclesMeshes(false);

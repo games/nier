@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 export type Asset =
   | {
@@ -8,20 +9,35 @@ export type Asset =
       distance: number;
       volume?: number;
     }
-  | { type: "Texture"; name: string; url: string };
+  | { type: "Texture"; name: string; url: string }
+  | { type: "GLB"; name: string; url: string };
 
 export class AssetManager {
   private readonly loadingManager: THREE.LoadingManager;
+
   private readonly audioLoader: THREE.AudioLoader;
   private readonly audios: Map<string, any>;
+
+  private readonly gltfLoader: GLTFLoader;
+  private readonly models: Map<string, THREE.Mesh>;
+
+  private readonly textureLoader: THREE.TextureLoader;
+  private readonly textures: Map<string, THREE.Texture>;
 
   public readonly audioListener: THREE.AudioListener;
 
   constructor() {
     this.loadingManager = new THREE.LoadingManager();
+
     this.audioLoader = new THREE.AudioLoader(this.loadingManager);
     this.audioListener = new THREE.AudioListener();
     this.audios = new Map();
+
+    this.gltfLoader = new GLTFLoader(this.loadingManager);
+    this.models = new Map();
+
+    this.textureLoader = new THREE.TextureLoader(this.loadingManager);
+    this.textures = new Map();
   }
 
   init(manifest: readonly Asset[]): Promise<void> {
@@ -59,6 +75,22 @@ export class AssetManager {
     throw new Error(`Unsupported audio type: ${source}`);
   }
 
+  getModel(name: string): THREE.Mesh {
+    const model = this.models.get(name);
+    if (model === undefined) {
+      throw new Error(`Model not found: ${name}`);
+    }
+    return model;
+  }
+
+  getTexture(name: string): THREE.Texture {
+    const texture = this.textures.get(name);
+    if (texture === undefined) {
+      throw new Error(`Texture not found: ${name}`);
+    }
+    return texture;
+  }
+
   private loadAudios(manifest: readonly Asset[]) {
     manifest.forEach((asset) => {
       if (asset.type === "PositionalAudio") {
@@ -69,8 +101,19 @@ export class AssetManager {
           audio.setVolume(asset.volume ?? 1);
           this.audios.set(asset.name, audio);
         });
-      } else {
-        console.warn(`Unsupported asset type: ${asset.type}`);
+      } else if (asset.type === "Texture") {
+        this.textureLoader.load(asset.url, (texture) => {
+          this.textures.set(asset.name, texture);
+        });
+      } else if (asset.type === "GLB") {
+        this.gltfLoader.load(asset.url, (gltf) => {
+          gltf.scene.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              this.models.set(asset.name, child);
+            }
+            console.log(child);
+          });
+        });
       }
     });
   }

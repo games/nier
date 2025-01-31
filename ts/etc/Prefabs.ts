@@ -4,6 +4,7 @@ import { HitShader, ProtectionShader } from "./Shaders";
 import { Guard } from "../entities/Guard";
 import { GameEntity } from "yuka";
 import { Tower } from "../entities/Tower";
+import { Player } from "../entities/Player";
 
 function sync(entity: GameEntity, renderComponent: THREE.Object3D) {
   renderComponent.matrix.copy(entity.worldMatrix as any);
@@ -111,10 +112,16 @@ export function enemyDestructibleProjectile() {
   };
 }
 
-export function obstacle() {
+export function obstacle(world: World) {
   return (maxInstances: number) => {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshLambertMaterial({ color: 0xdedad3 });
+
+    // const obstacle = world.assetManager.getModel("obstacle");
+    // obstacle.matrixAutoUpdate = false;
+    // obstacle.castShadow = true;
+    // const geometry = obstacle.geometry.clone();
+    // const material = obstacle.material;
 
     const instance = new THREE.InstancedMesh(geometry, material, maxInstances);
     instance.frustumCulled = false;
@@ -124,16 +131,15 @@ export function obstacle() {
 }
 
 export function tower(world: World) {
-  const towerGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16);
-  const towerMaterial = new THREE.MeshLambertMaterial({ color: 0x333132 });
-  const towerMesh = new THREE.Mesh(towerGeometry, towerMaterial);
-  towerMesh.matrixAutoUpdate = false;
-  towerMesh.castShadow = true;
-
   return () => {
     const assets = world.assetManager;
-    const mesh = towerMesh.clone();
+
+    const mesh = world.assetManager.getModel("obstacle").clone();
+    mesh.matrixAutoUpdate = false;
+    mesh.castShadow = true;
+
     const tower = new Tower(world, mesh);
+    tower.setRenderComponent(mesh, sync);
 
     const enemyShot = assets.cloneAudio("enemyShot");
     const enemyExplode = assets.cloneAudio("enemyExplode");
@@ -143,10 +149,33 @@ export function tower(world: World) {
     tower.audios.set("enemyExplode", enemyExplode);
     tower.audios.set("enemyHit", enemyHit);
 
-    towerMesh.add(enemyShot);
-    towerMesh.add(enemyExplode);
-    towerMesh.add(enemyHit);
+    mesh.add(enemyShot);
+    mesh.add(enemyExplode);
+    mesh.add(enemyHit);
 
     return tower;
+  };
+}
+
+export function player(world: World) {
+  return () => {
+    const assetManager = world.assetManager;
+    const playerShot = assetManager.getAudio("playerShot");
+    const playerHit = assetManager.getAudio("playerHit");
+    const playerExplode = assetManager.getAudio("playerExplode");
+
+    const jet = world.assetManager.getModel("jet").clone();
+    jet.matrixAutoUpdate = false;
+    jet.castShadow = true;
+    jet.add(playerShot, playerHit, playerExplode);
+
+    const player = new Player(world, jet);
+    player.audios.set("playerShot", playerShot);
+    player.audios.set("playerHit", playerHit);
+    player.audios.set("playerExplode", playerExplode);
+
+    player.setRenderComponent(jet, sync);
+
+    return player;
   };
 }
