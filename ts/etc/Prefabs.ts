@@ -112,7 +112,7 @@ export function enemyDestructibleProjectile() {
   };
 }
 
-export function obstacle(world: World) {
+export function obstacle(_world: World) {
   return (maxInstances: number) => {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshLambertMaterial({ color: 0xdedad3 });
