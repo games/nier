@@ -41,7 +41,14 @@ export class AssetManager {
   }
 
   init(manifest: readonly Asset[]): Promise<void> {
-    this.loadAudios(manifest);
+    const progressBar = document.querySelector(
+      "#progressBar",
+    ) as HTMLDivElement;
+    this.loadingManager.onProgress = (url, loaded, total) => {
+      const label = `${((loaded / total) * 100).toFixed(2)}%`;
+      progressBar.innerHTML = `<div>${label}</div><div>${url}</div>`;
+    };
+    this.loadAssets(manifest);
     return new Promise<void>((resolve) => {
       this.loadingManager.onLoad = () => {
         setTimeout(() => resolve(), 100);
@@ -91,7 +98,7 @@ export class AssetManager {
     return texture;
   }
 
-  private loadAudios(manifest: readonly Asset[]) {
+  private loadAssets(manifest: readonly Asset[]) {
     manifest.forEach((asset) => {
       if (asset.type === "PositionalAudio") {
         this.audioLoader.load(asset.url, (buffer) => {
