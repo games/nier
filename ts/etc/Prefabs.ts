@@ -136,7 +136,7 @@ export function tower(world: World) {
 
     const mesh = world.assetManager.getModel("obstacle").clone();
     mesh.matrixAutoUpdate = false;
-    mesh.castShadow = true;
+    mesh.traverse((x) => (x.castShadow = true));
 
     const tower = new Tower(world, mesh);
     tower.setRenderComponent(mesh, sync);
@@ -166,7 +166,7 @@ export function player(world: World) {
 
     const jet = world.assetManager.getModel("jet").clone();
     jet.matrixAutoUpdate = false;
-    jet.castShadow = true;
+    jet.traverse((x) => (x.castShadow = true));
     jet.add(playerShot, playerHit, playerExplode);
 
     const player = new Player(world, jet);

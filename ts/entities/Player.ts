@@ -37,7 +37,7 @@ export class Player extends MovingEntity {
 
   constructor(
     public readonly world: World,
-    public readonly mesh: THREE.Mesh,
+    public readonly view: THREE.Object3D,
   ) {
     super();
 

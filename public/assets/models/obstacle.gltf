@@ -55,9 +55,9 @@
 	],
 	"images":[
 		{
-			"mimeType":"image/jpeg",
-			"name":"photo-plastic-texture-pattern",
-			"uri":"photo-plastic-texture-pattern.jpg"
+			"mimeType":"image/png",
+			"name":"texture",
+			"uri":"texture.png"
 		}
 	],
 	"accessors":[

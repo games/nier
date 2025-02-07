@@ -19,7 +19,7 @@ export class AssetManager {
   private readonly audios: Map<string, any>;
 
   private readonly gltfLoader: GLTFLoader;
-  private readonly models: Map<string, THREE.Mesh>;
+  private readonly models: Map<string, THREE.Group>;
 
   private readonly textureLoader: THREE.TextureLoader;
   private readonly textures: Map<string, THREE.Texture>;
@@ -82,7 +82,7 @@ export class AssetManager {
     throw new Error(`Unsupported audio type: ${source}`);
   }
 
-  getModel(name: string): THREE.Mesh {
+  getModel(name: string): THREE.Group {
     const model = this.models.get(name);
     if (model === undefined) {
       throw new Error(`Model not found: ${name}`);
@@ -114,12 +114,15 @@ export class AssetManager {
         });
       } else if (asset.type === "GLB") {
         this.gltfLoader.load(asset.url, (gltf) => {
-          gltf.scene.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-              this.models.set(asset.name, child);
-            }
-            console.log(child);
-          });
+          // const root = new THREE.Object3D();
+          // gltf.scene.traverse((child) => {
+          //   if (child instanceof THREE.Mesh) {
+          //     root.add(child);
+          //   }
+          //   console.log(child);
+          // });
+          // this.models.set(asset.name, root);
+          this.models.set(asset.name, gltf.scene);
         });
       }
     });

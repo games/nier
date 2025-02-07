@@ -8,23 +8,59 @@
 		{
 			"name":"Scene",
 			"nodes":[
-				0
+				0,
+				1
 			]
 		}
 	],
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"Jet"
+			"name":"Cube.001",
+			"scale":[
+				0.02607107162475586,
+				0.12743432819843292,
+				0.12743432819843292
+			],
+			"translation":[
+				-0.0022042766213417053,
+				0.07709144055843353,
+				-0.7542060613632202
+			]
+		},
+		{
+			"mesh":1,
+			"name":"Cube",
+			"scale":[
+				0.8733806610107422,
+				0.19956009089946747,
+				0.8733806610107422
+			],
+			"translation":[
+				-0.0022042766213417053,
+				-0.00789274275302887,
+				-0.1287224143743515
+			]
 		}
 	],
 	"materials":[
 		{
 			"doubleSided":true,
-			"name":"Material.001",
+			"name":"Material",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
 					"index":0
+				},
+				"metallicFactor":0,
+				"roughnessFactor":0.5
+			}
+		},
+		{
+			"doubleSided":true,
+			"name":"Material.001",
+			"pbrMetallicRoughness":{
+				"baseColorTexture":{
+					"index":1
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -33,7 +69,7 @@
 	],
 	"meshes":[
 		{
-			"name":"Cube.001",
+			"name":"Cube.002",
 			"primitives":[
 				{
 					"attributes":{
@@ -45,80 +81,161 @@
 					"material":0
 				}
 			]
+		},
+		{
+			"name":"Cube",
+			"primitives":[
+				{
+					"attributes":{
+						"POSITION":4,
+						"NORMAL":5,
+						"TEXCOORD_0":6
+					},
+					"indices":7,
+					"material":1
+				}
+			]
 		}
 	],
 	"textures":[
 		{
 			"sampler":0,
 			"source":0
+		},
+		{
+			"sampler":0,
+			"source":1
 		}
 	],
 	"images":[
 		{
-			"mimeType":"image/jpeg",
-			"name":"photo-metal-texture-pattern",
-			"uri":"photo-metal-texture-pattern.jpg"
+			"mimeType":"image/png",
+			"name":"Untitled",
+			"uri":"Untitled.png"
+		},
+		{
+			"mimeType":"image/png",
+			"name":"red",
+			"uri":"red.png"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":92,
+			"count":216,
 			"max":[
-				0.5266363024711609,
-				0.057011526077985764,
-				0.4223904609680176
+				1,
+				2.5694360733032227,
+				10.662491798400879
 			],
 			"min":[
-				-0.5296735763549805,
-				-0.0637015700340271,
-				-0.31839925050735474
+				-1,
+				0.5694359540939331,
+				-1
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":92,
+			"count":216,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":92,
+			"count":216,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5123,
-			"count":144,
+			"count":408,
+			"type":"SCALAR"
+		},
+		{
+			"bufferView":4,
+			"componentType":5126,
+			"count":146,
+			"max":[
+				0.9607439637184143,
+				1.2237706184387207,
+				0.7195038795471191
+			],
+			"min":[
+				-0.9627002477645874,
+				0.7560532689094543,
+				-0.8520967960357666
+			],
+			"type":"VEC3"
+		},
+		{
+			"bufferView":5,
+			"componentType":5126,
+			"count":146,
+			"type":"VEC3"
+		},
+		{
+			"bufferView":6,
+			"componentType":5126,
+			"count":146,
+			"type":"VEC2"
+		},
+		{
+			"bufferView":7,
+			"componentType":5123,
+			"count":228,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":1104,
+			"byteLength":2592,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":1104,
-			"byteOffset":1104,
+			"byteLength":2592,
+			"byteOffset":2592,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":736,
-			"byteOffset":2208,
+			"byteLength":1728,
+			"byteOffset":5184,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":288,
-			"byteOffset":2944,
+			"byteLength":816,
+			"byteOffset":6912,
+			"target":34963
+		},
+		{
+			"buffer":0,
+			"byteLength":1752,
+			"byteOffset":7728,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":1752,
+			"byteOffset":9480,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":1168,
+			"byteOffset":11232,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":456,
+			"byteOffset":12400,
 			"target":34963
 		}
 	],
@@ -130,7 +247,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":3232,
+			"byteLength":12856,
 			"uri":"jet.bin"
 		}
 	]

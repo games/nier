@@ -29,7 +29,7 @@ export class Guard extends Vehicle {
 
   constructor(
     private readonly world: World,
-    public readonly mesh: THREE.Mesh,
+    public readonly view: THREE.Object3D,
   ) {
     super();
 

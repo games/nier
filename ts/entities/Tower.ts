@@ -6,7 +6,7 @@ import {
   Telegram,
 } from "yuka";
 import { World } from "../core/World";
-import { Mesh, PositionalAudio } from "three";
+import { Object3D, PositionalAudio } from "three";
 import { playAudio } from "./utils";
 import { Player } from "./Player";
 
@@ -20,7 +20,7 @@ export class Tower extends GameEntity {
 
   constructor(
     private world: World,
-    public readonly mesh: Mesh,
+    public readonly view: Object3D,
   ) {
     super();
     this.boundingRadius = 0.5;

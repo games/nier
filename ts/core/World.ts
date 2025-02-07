@@ -185,7 +185,7 @@ export class World {
   private initPlayer() {
     this.player = this.prefabs.player();
     this.entityManager.add(this.player);
-    this.scene.add(this.player.mesh);
+    this.scene.add(this.player.view);
     this.scene.add(this.player.particleSystem.points!);
 
     this.controls = new VehicleControls(this.player, this.camera);
@@ -525,7 +525,7 @@ export class World {
   addGuard(guard: Guard) {
     this.guards.push(guard);
     this.entityManager.add(guard);
-    this.scene.add(guard.mesh);
+    this.scene.add(guard.view);
   }
 
   removeGuard(guard: Guard) {
@@ -535,7 +535,7 @@ export class World {
     }
 
     this.entityManager.remove(guard);
-    this.scene.remove(guard.mesh);
+    this.scene.remove(guard.view);
   }
 
   addObstacle(obstacle: Obstacle) {
@@ -554,14 +554,14 @@ export class World {
   addTower(tower: Tower) {
     this.towers.push(tower);
     this.entityManager.add(tower);
-    this.scene.add(tower.mesh);
+    this.scene.add(tower.view);
   }
 
   removeTower(tower: Tower) {
     const index = this.towers.indexOf(tower);
     this.towers.splice(index, 1);
     this.entityManager.remove(tower);
-    this.scene.remove(tower.mesh);
+    this.scene.remove(tower.view);
   }
 
   updateField(x: number, y: number, z: number) {
