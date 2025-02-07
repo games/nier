@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      mobile-device-detect:
+        specifier: ^0.4.3
+        version: 0.4.3
       three:
         specifier: 0.173.0
         version: 0.173.0
@@ -817,6 +820,9 @@ packages:
 
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
+
+  mobile-device-detect@0.4.3:
+    resolution: {integrity: sha512-SN9EBE9SoJgkb83kuUVoIp3R9OGYE5dYEnLEz2oLooh0DzgtQ72BJmpNGqrgFvmfE4iLR2CaVJ3RjUcStheVZg==}
 
   ms@2.0.0:
     resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
@@ -1778,6 +1784,8 @@ snapshots:
       brace-expansion: 1.1.11
 
   minimist@1.2.8: {}
+
+  mobile-device-detect@0.4.3: {}
 
   ms@2.0.0: {}
 

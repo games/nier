@@ -1,6 +1,7 @@
 import { EventDispatcher, Vector3, MathUtils } from "yuka";
 import * as THREE from "three";
 import { Player } from "../entities/Player";
+import { isMobile } from "mobile-device-detect";
 
 const direction = new Vector3();
 const target = new Vector3();
@@ -71,7 +72,9 @@ export class VehicleControls extends EventDispatcher {
       false,
     );
 
-    document.body.requestPointerLock();
+    if (!isMobile) {
+      document.body.requestPointerLock({ unadjustedMovement: true });
+    }
   }
 
   disconnect() {
