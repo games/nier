@@ -40,7 +40,7 @@ export class ParticleSystem {
     this.maxParticles = maxParticles;
 
     const loader = new THREE.TextureLoader();
-    const map = loader.load("/assets/texture/quad.png");
+    const map = loader.load("./assets/texture/quad.png");
 
     const material = new THREE.ShaderMaterial(ParticleShader);
     material.uniforms.map.value = map;
