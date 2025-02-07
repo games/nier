@@ -10,3 +10,9 @@ Read the following article for more information about the project: [The hacking 
 ### License
 
 The game is [MIT licensed](./LICENSE).
+
+
+
+# convert ogg to mp3
+
+find . -type f -iname "*.ogg" -exec bash -c 'FILE="$1"; ffmpeg -i "${FILE}" -vn -ab 128k "${FILE%.webm}.mp3";' _ '{}' \;
